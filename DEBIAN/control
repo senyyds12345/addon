@@ -1,0 +1,9 @@
+Package: addon
+Version: 1.0.0                  
+Architecture: all               
+Maintainer: senyyds <1494621359@qq.com>  
+Depends: util-linux, jq, zip
+Section: Utility
+Priority: optional
+Description: A tool for creating/building Minecraft addons (MCADDON) for Termux.
+ This tool can create addon directories (RP/BP), build MCADDON files, and clean build caches.
