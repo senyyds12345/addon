@@ -1,3 +1,4 @@
+[zh_CN](./README_ZH.md)
 # addon
 Addon is a deb package for quickly creating mcaddon projects, which supports Termux and Linux systems.
 # install
