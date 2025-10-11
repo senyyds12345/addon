@@ -1,6 +1,10 @@
 # addon
 Addon is a deb package for quickly creating mcaddon projects, which supports Termux and Linux systems.
 # install
+- build
+```bash
+dpkg-deb build addon
+```
 - Execute this command to install.
 ```bash
 dpkg -i addon.deb
