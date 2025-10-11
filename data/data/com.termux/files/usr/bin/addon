@@ -1,0 +1,146 @@
+#!/bin/bash
+missing=0
+create=$1
+modname=$2
+RP_dirs=(
+    "texts"
+    "textures"
+    "textures/items"
+    "textures/blocks"
+    "textures/entity"
+    "textures/particle"
+    "models"
+    "models/entity"
+    "models/blocks"
+    "models/items"
+    "animations"
+    "sounds"
+    "sounds/mob"
+    "sounds/block"
+    "sounds/item"
+    "ui"
+    "ui/_global"
+)
+BP_dirs=(
+    "items"
+    "blocks"
+    "entities"
+    "recipes"
+    "recipes/crafting"
+    "recipes/furnace"
+    "recipes/brewing"
+    "recipes/smithing"
+    "recipes/smoker"
+    "recipes/blast_furnace"
+    "recipes/campfire"
+    "recipes/stonecutter"
+    "loot_tables"
+    "loot_tables/blocks"
+    "loot_tables/entities"
+    "loot_tables/chests"
+    "loot_tables/gameplay"
+    "features"
+    "features/rules"
+    "functions"
+    "scripts"
+    "animation_controllers"
+    "spawn_rules"
+    "trading"
+    "dialogue"
+    "biomes"
+)
+case ${create} in
+    "create")
+        if [ $# -lt 2 ]; then
+        echo "错误:必须提供两个参数,分别是create和模组名称"
+        exit 1
+    fi
+    echo "正在创建目录……"
+    mkdir -p $modname/RP_$modname
+    mkdir -p $modname/BP_$modname
+    touch $modname/RP_$modname/manifest.json
+    touch $modname/BP_$modname/manifest.json
+    for bpdir in ${BP_dirs[@]}; do
+        mkdir -p $modname/BP_$modname/$bpdir
+    done
+    for rpdir in ${RP_dirs[@]}; do
+        mkdir -p $modname/RP_$modname/$rpdir
+    done
+    touch $modname/RP_$modname/textures/item_texture.json
+    touch $modname/RP_$modname/textures/terrain_texture.json
+    touch $modname/RP_$modname/texts/zh_CN.lang
+    touch $modname/RP_$modname/texts/en_US.lang
+    echo "目录创建完成,开始写入配置"
+    uuid1=$(uuidgen)
+    uuid2=$(uuidgen)
+    echo "{\"format_version\":2,\"header\":{\"name\":\"RP_$modname\",\"description\":\"\",\"uuid\":\"$uuid1\",\"version\":[1,0,0],\"min_engine_version\":[1,20,0]},\"modules\":[{\"type\":\"resources\",\"uuid\":\"$uuid2\",\"version\":[1,0,0]}]}" > $modname/RP_$modname/manifest.json
+    uuid3=$(uuidgen)
+    uuid4=$(uuidgen)
+    echo "{\"format_version\":2,\"header\":{\"name\":\"BP_$modname\",\"description\":\"\",\"uuid\":\"$uuid3\",\"version\":[1,0,0],\"min_engine_version\":[1,20,0]},\"modules\":[{\"type\":\"data\",\"uuid\":\"$uuid4\",\"version\":[1,0,0]}],\"dependencies\":[{\"uuid\":\"$uuid1\",\"version\":[1,0,0]}]}" > $modname/BP_$modname/manifest.json
+    echo "模组配置写入完成"
+    echo "正在格式化json……"
+    jq . $modname/RP_$modname/manifest.json > $modname/RP_$modname/manifest.tmp && mv $modname/RP_$modname/manifest.tmp $modname/RP_$modname/manifest.json
+    jq . $modname/BP_$modname/manifest.json > $modname/BP_$modname/manifest.tmp && mv $modname/BP_$modname/manifest.tmp $modname/BP_$modname/manifest.json
+    echo "格式化完成"
+    echo "生成成功!"
+    ;;
+    "build")
+        dirname=$2
+        if [ $# -lt 2 ]; then
+            echo "错误:必须需要2个参数,分别是build与模组目录名"
+        fi
+        cd "$dirname"
+        find=$(find -type d -name "RP_$dirname" -o -name "BP_$dirname")
+        if [ -z "$find" ]; then
+            echo "无效的目录"
+            exit 1
+        fi
+        find RP_$dirname -type d -empty -delete 2>/dev/null
+        find BP_$dirname -type d -empty -delete 2>/dev/null
+        echo "开始构建……" 
+        mkdir build
+        zip -r build/$dirname.mcaddon RP_$dirname BP_$dirname
+        echo "构建成功"
+        ;;
+        "clean")
+            dirname=$2
+            if [ $# -lt 2 ]; then
+                echo "错误:必须要两个参数,分别是clean和模组目录名"
+                exit 1
+            fi
+            echo "开始清理构建缓存……"
+            cd "$dirname"
+            rm -rf build
+            echo "清理完成"
+            ;;
+            "ini")
+                packages=("uuidgen" "jq" "zip")
+                for pkg in ${packages[@]}; do
+                    if command -v "$pkg" &> /dev/null; then
+                        echo "[$(date +'%Y-%m-%d %H:%M:%S')] $message" > /dev/null
+                    else
+                        missing=1
+                    fi
+                done
+                if [ "$missing" -eq 1 ]; then
+                    read -p "是否安装依赖(y,n)?" abc
+                    if [ $abc = "y" ]; then
+                        echo "开始下载……"
+                        apt install util-linux uuid-utils zip
+                    fi
+                    if [ $abc = "n" ]; then
+                        echo "拒绝安装依赖,退出初始化"
+                        exit 0
+                    fi
+                fi
+                ;;
+                "--help")
+                    echo "addon create <ModName>创建一个addon项目"
+                    echo "addon build <ModName>构建你的addon项目"
+                    echo "addon clean <ModName>清理addon的构建缓存"
+                    
+                    
+                    echo "addon create <ModName> - Create an addon project"
+                    echo "addon build <ModName> - Build your addon project"
+                    echo "addon clean <ModName> - Clean the build cache of the addon"
+esac
