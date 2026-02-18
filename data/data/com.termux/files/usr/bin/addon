@@ -1,0 +1,315 @@
+#!/bin/bash
+set -eo pipefail
+trap 'echo "Abnormal termination of the program, at line $LINENO 程序异常终止 位于 $LINENO 行" >&2' ERR
+missing=0
+create=$1
+modname=$2
+
+if [ $# -eq 0 ]; then
+    echo "No parameter input, Please use \"addon -h\" View Help"
+    exit 1
+fi
+
+RP_dirs=(
+    "texts"
+    "textures"
+    "textures/items"
+    "textures/blocks"
+    "textures/entity"
+    "textures/particle"
+    "models"
+    "models/entity"
+    "models/blocks"
+    "models/items"
+    "animations"
+    "sounds"
+    "sounds/mob"
+    "sounds/block"
+    "sounds/item"
+    "ui"
+    "ui/_global"
+)
+
+BP_dirs=(
+    "items"
+    "blocks"
+    "entities"
+    "recipes"
+    "recipes/crafting"
+    "recipes/furnace"
+    "recipes/brewing"
+    "recipes/smithing"
+    "recipes/smoker"
+    "recipes/blast_furnace"
+    "recipes/campfire"
+    "recipes/stonecutter"
+    "loot_tables"
+    "loot_tables/blocks"
+    "loot_tables/entities"
+    "loot_tables/chests"
+    "loot_tables/gameplay"
+    "features"
+    "features/rules"
+    "functions"
+    "scripts"
+    "animation_controllers"
+    "spawn_rules"
+    "trading"
+    "dialogue"
+    "biomes"
+)
+
+Pack=(
+    "tests"
+    "textures"
+    "textures/items"
+    "textures/blocks"
+    "textures/entity"
+    "textures/environment"
+    "textures/ui"
+    "textures/misc"
+    "models"
+    "models/blocks"
+    "models/entity"
+    "models/items"
+    "ui"
+    "sounds"
+    "animations"
+    "render_controllers"
+    "particles"
+)
+
+case ${create} in
+    "create")
+        if [ $# -lt 2 ]; then
+            echo "错误:必须提供两个参数,分别是create和模组名称"
+            exit 1
+        fi
+        mkdir -p "$modname"/RP_"$modname"
+        mkdir -p "$modname"/BP_"$modname"
+        touch "$modname"/RP_"$modname"/manifest.json
+        touch "$modname"/BP_"$modname"/manifest.json
+
+        for bpdir in ${BP_dirs[@]}; do
+            mkdir -p "$modname"/BP_"$modname"/"$bpdir"
+            echo "mkdir -p $modname/BP_$modname/$bpdir"
+        done
+
+        for rpdir in ${RP_dirs[@]}; do
+            mkdir -p "$modname"/RP_"$modname"/"$rpdir"
+            echo "mkdir -p $modname/RP_$modname/$rpdir"
+        done
+
+        touch "$modname"/RP_"$modname"/textures/item_texture.json
+        touch "$modname"/RP_"$modname"/textures/terrain_texture.json
+        touch "$modname"/RP_"$modname"/texts/zh_CN.lang
+        touch "$modname"/RP_"$modname"/texts/en_US.lang
+        echo "touch $modname/RP_$modname/textures/item_texture.json"
+        echo "touch $modname/RP_$modname/textures/terrain_texture.json"
+        echo "touch $modname/RP_$modname/texts/zh_CN.lang"
+        echo "touch $modname/RP_$modname/texts/en_US.lang"
+
+        uuid1=$(uuidgen)
+        uuid2=$(uuidgen)
+        echo "{\"format_version\":2,\"header\":{\"name\":\"RP_$modname\",\"description\":\"\",\"uuid\":\"$uuid1\",\"version\":[1,0,0],\"min_engine_version\":[1,20,0]},\"modules\":[{\"type\":\"resources\",\"uuid\":\"$uuid2\",\"version\":[1,0,0]}]}" > "$modname"/RP_"$modname"/manifest.json
+        echo "echo \"{\\\"format_version\\\":2,\\\"header\\\":{\\\"name\\\":\\\"RP_$modname\\\",\\\"description\\\":\\\"\\\",\\\"uuid\\\":\\\"$uuid1\\\",\\\"version\\\":[1,0,0],\\\"min_engine_version\\\":[1,20,0]},\\\"modules\\\":[{\\\"type\\\":\\\"resources\\\",\\\"uuid\\\":\\\"$uuid2\\\",\\\"version\\\":[1,0,0]}]}\" > $modname/RP_$modname/manifest.json"
+
+        uuid3=$(uuidgen)
+        uuid4=$(uuidgen)
+        echo "{\"format_version\":2,\"header\":{\"name\":\"BP_$modname\",\"description\":\"\",\"uuid\":\"$uuid3\",\"version\":[1,0,0],\"min_engine_version\":[1,20,0]},\"modules\":[{\"type\":\"data\",\"uuid\":\"$uuid4\",\"version\":[1,0,0]}],\"dependencies\":[{\"uuid\":\"$uuid1\",\"version\":[1,0,0]}]}" > "$modname"/BP_"$modname"/manifest.json
+        echo "echo \"{\\\"format_version\\\":2,\\\"header\\\":{\\\"name\\\":\\\"BP_$modname\\\",\\\"description\\\":\\\"\\\",\\\"uuid\\\":\\\"$uuid3\\\",\\\"version\\\":[1,0,0],\\\"min_engine_version\\\":[1,20,0]},\\\"modules\\\":[{\\\"type\\\":\\\"data\\\",\\\"uuid\\\":\\\"$uuid4\\\",\\\"version\\\":[1,0,0]}],\\\"dependencies\\\":[{\\\"uuid\\\":\\\"$uuid1\\\",\\\"version\\\":[1,0,0]}]}\" > $modname/BP_$modname/manifest.json"
+
+        echo "{\"resource_pack_name\":\"vanilla\",\"texture_name\":\"atlas.items\",\"texture_data\":{}}" > "$modname"/RP_"$modname"/textures/item_texture.json
+        echo "echo \"{\\\"resource_pack_name\\\":\\\"vanilla\\\",\\\"texture_name\\\":\\\"atlas.items\\\",\\\"texture_data\\\":{}}\" > $modname/RP_$modname/textures/item_texture.json"
+
+        jq . "$modname"/RP_"$modname"/textures/item_texture.json > "$modname"/RP_"$modname"/textures/item_texture.tmp && mv "$modname"/RP_"$modname"/textures/item_texture.tmp "$modname"/RP_"$modname"/textures/item_texture.json
+        jq . "$modname"/RP_"$modname"/manifest.json > "$modname"/RP_"$modname"/manifest.tmp && mv "$modname"/RP_"$modname"/manifest.tmp "$modname"/RP_"$modname"/manifest.json
+        jq . "$modname"/BP_"$modname"/manifest.json > "$modname"/BP_"$modname"/manifest.tmp && mv "$modname"/BP_"$modname"/manifest.tmp "$modname"/BP_"$modname"/manifest.json
+
+        echo "jq . $modname/RP_$modname/textures/item_texture.json > $modname/RP_$modname/textures/item_texture.tmp && mv $modname/RP_$modname/textures/item_texture.tmp $modname/RP_$modname/textures/item_texture.json"
+        echo "jq . $modname/RP_$modname/manifest.json > $modname/RP_$modname/manifest.tmp && mv $modname/RP_$modname/manifest.tmp $modname/RP_$modname/manifest.json"
+        echo "jq . $modname/BP_$modname/manifest.json > $modname/BP_$modname/manifest.tmp && mv $modname/BP_$modname/manifest.tmp $modname/BP_$modname/manifest.json"
+
+        echo "Build Success"
+        ;;
+    "build")
+        dirname=$2
+        if [ $# -lt 2 ]; then
+            echo "错误:必须需要2个参数,分别是build与模组目录名"
+            exit 1
+        fi
+        cd "$dirname"
+        find=$(find -type d -name "RP_$dirname" -o -name "BP_$dirname" || true)
+        if [ -z "$find" ]; then
+            echo "无效的目录"
+            exit 1
+        fi
+        echo "开始构建……"
+
+        find RP_"$dirname" -depth -type f -empty -delete 2>/dev/null || true
+        find BP_"$dirname" -depth -type f -empty -delete 2>/dev/null || true
+        find RP_"$dirname" -type d -empty -delete 2>/dev/null || true
+        find BP_"$dirname" -type d -empty -delete 2>/dev/null || true
+
+        mkdir -p build
+        zip -r build/"$dirname".mcaddon RP_"$dirname" BP_"$dirname"
+        echo "构建成功"
+        ;;
+
+    "clean")
+        dirname=$2
+        if [ $# -lt 2 ]; then
+            echo "错误:必须要两个参数,分别是clean和模组目录名"
+            exit 1
+        fi
+        echo "开始清理构建缓存……"
+        cd "$dirname"
+        rm -rf build
+        echo "清理完成"
+        ;;
+
+    "init")
+        message="This is an Easter egg(LOL) 这是一个彩蛋(LOL)"
+        packages=("uuidgen" "jq" "zip")
+        for pkg in ${packages[@]}; do
+            if command -v "$pkg" &> /dev/null; then
+                echo "[$(date +'%Y-%m-%d %H:%M:%S')] $message" > /dev/null
+            else
+                missing=1
+            fi
+        done
+
+        if [ "$missing" -eq 1 ]; then
+            read -p "是否安装依赖(y,n)?" abc
+            if [ "$abc" = "y" ]; then
+                echo "开始下载……"
+                apt install util-linux uuid-utils zip jq
+                echo "Hey! It seems that something floated into /dev/null? 似乎有什么东西飞进了/dev/null"
+            fi
+            if [ "$abc" = "n" ]; then
+                echo "拒绝安装依赖,退出初始化"
+                exit 0
+            fi
+        fi
+        ;;
+
+    "--help"|"-h"|"--h"|"-help")
+        echo "addon create <ModName> - 创建一个addon项目"
+        echo "addon build <ModName> - 构建你的addon项目"
+        echo "addon clean <ModName> - 清理addon的构建缓存"
+        echo "addon remove <ModName> - 删除你的addon模组"
+        echo "addon add <Att> - 添加属性在你的.json文件上"
+        echo "addon pack <PackName> - 创建一个光影/材质包项目"
+        echo "addon ai <Prompt> - 使用智谱ai协助您开发"
+
+        echo "addon create <ModName> - Create an addon project"
+        echo "addon build <ModName> - Build your addon project"
+        echo "addon clean <ModName> - Clean the build cache of the addon"
+        echo "addon remove <ModName> - Delete your addon"
+        echo "addon add <Att> - Add attributes to your json file"
+        echo "addon pack <PackName> - Create a light and shadow/material package project"
+        echo "addon ai <Prompt> - Use Zhipu ai to assist you in development"
+        ;;
+
+    "remove")
+        modname=$2
+        if [ -d "$modname" ]; then
+            read -p "您确定吗,这个文件夹可能是您的重要文件夹(y,n):" d
+            if [ "$d" = "y" ]; then
+                rm -r "$modname"
+                echo "$modname 项目已删除"
+            fi
+            if [ "$d" = "n" ]; then
+                exit 0
+            fi
+        fi
+        ;;
+
+    "add")
+        modname=$3
+        name=$2
+        if [ $# -lt 3 ]; then
+            echo "需要三个参数,分别是add,项目名,添加的类型"
+            exit 1
+        fi
+
+        case ${name} in
+            "item")
+                read -p "请输入您的物品名字>>" itemname
+                echo "{\"format_version\":\"1.20.0\",\"minecraft:item\":{\"description\":{\"identifier\":\"$modname:$itemname\",\"category\":\"item\"},\"components\":{\"minecraft:icon\":\"$itemname\"}}}" > "$modname"/BP_"$modname"/items/"$itemname".json
+                echo "已添加一个物品,正在格式化……"
+                jq . "$modname"/BP_"$modname"/items/"$itemname".json > "$modname"/BP_"$modname"/items/"$itemname".tmp && mv "$modname"/BP_"$modname"/items/"$itemname".tmp "$modname"/BP_"$modname"/items/"$itemname".json
+                echo "格式化完成,正在添加材质索引……"
+                jq --arg item "$itemname" '.texture_data += {"\($item)": {"textures": "textures/items/\($item).png"}}' "$modname"/RP_"$modname"/textures/item_texture.json > "$modname"/RP_"$modname"/textures/item_texture.tmp && mv "$modname"/RP_"$modname"/textures/item_texture.tmp "$modname"/RP_"$modname"/textures/item_texture.json
+                echo "完成!"
+                ;;
+
+            "att")
+                read -p "请输入要添加属性的物品json文件名>>" jsonname
+                echo "can use: damage"
+                read -p "请输入要添加的属性>>" att
+                case ${att} in
+                    "damage")
+                        read -p "请填写伤害数值>>" damage
+                        jq --arg damage "$damage" '."minecraft:item".components += {"minecraft:damage": ($damage | tonumber)}' "$modname"/BP_"$modname"/items/"$jsonname".json > "$modname"/BP_"$modname"/items/"$jsonname".tmp && mv "$modname"/BP_"$modname"/items/"$jsonname".tmp "$modname"/BP_"$modname"/items/"$jsonname".json
+                        echo "成功!"
+                        ;;
+                esac
+                ;;
+        esac
+        ;;
+
+    "pack")
+        packname=$2
+        if [ $# -lt 2 ]; then
+            echo "错误: 必须拥有2个参数,分别是pack与pack包名"
+            exit 1
+        fi
+        echo "Build Start"
+        mkdir -p "$packname"
+        mkdir -p "$packname"/RP_"$packname"
+        echo "mkdir -p $packname"
+        echo "mkdir -p $packname/RP_$packname"
+
+        for packdir in ${Pack[@]}; do
+            mkdir -p "$packname"/RP_"$packname"/"$packdir"
+            echo "mkdir -p $packname/RP_$packname/$packdir"
+        done
+
+        touch "$packname"/RP_"$packname"/manifest.json
+        echo "touch $packname/RP_$packname/manifest.json"
+
+        echo "{\"format_version\":2,\"header\":{\"name\":\"$packname\",\"description\":\"\",\"uuid\":\"$(uuidgen)\",\"version\":[1,0,0],\"min_engine_version\":[1,20,0]},\"modules\":[{\"type\":\"resources\",\"uuid\":\"$(uuidgen)\",\"version\":[1,0,0]}]}" > "$packname"/RP_"$packname"/manifest.json
+        jq . "$packname"/RP_"$packname"/manifest.json > "$packname"/RP_"$packname"/manifest.tmp && mv "$packname"/RP_"$packname"/manifest.tmp "$packname"/RP_"$packname"/manifest.json
+        echo "Build Success"
+        ;;
+    "su")
+        echo "This script does not require root privileges (LOL)"
+        echo "Build Success...? what the..."
+        ;;
+    "rish")
+        rish_pwd=$2
+        echo "What? Are you just typing for fun? This script does indeed support shell permissions 这个脚本确实支持shell权限!"
+        echo "But it hasn't been achieved yet. Stay tuned! 不过还没实现 请敬请期待!"
+        if ! [ -z "$rish_pwd" ]; then
+            if ! [ -f "$rish_pwd" ]; then
+                echo "But the path you gave rish was wrong. Don't make a mistake next time! 不过你给的rish路径文件并不存在 下次注意些"
+            fi
+        fi
+        echo "Build Success...? what the...hell?"
+        ;;
+    "interaction")
+        echo "I will always miss the interaction repository (cry.jpg)"
+        ;;
+    "creeper")
+        echo "pssssssss.........boom!"
+        ;;
+    "ai")
+        if [ $# -lt 2 ]; then
+            echo "用法: addon ai \"提示词\""
+            exit 1
+        fi
+        prompt="$2"
+        python $PREFIX/addon/ai/ai.pyc "$prompt"
+        ;;
+esac

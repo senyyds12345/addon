@@ -1,9 +1,9 @@
-Package: NBT-Edit
-Version: 1.0.0
-Section: utils
+Package: addon
+Version: 1.1.0
+Architecture: all               
+Maintainer: senyyds <1494621359@qq.com>  
+Depends: util-linux, jq, zip, python
+Section: Utility
 Priority: optional
-Architecture: all
-Depends: bash, coreutils, perl
-Maintainer: senyyds 1494621359@qq.com
-Description: Command-line NBT file editor for Minecraft A powerful command-line tool for creating and editing NBT (Named Binary Tag) files used by Minecraft. Supports multiple data types including bytes, shorts, integers, and floats with proper big-endian encoding.
-Homepage: https://github.com/senyyds/NBT-Edit
+Description: A tool for creating/building Minecraft addons (MCADDON) for Termux.
+ This tool can create addon directories (RP/BP), build MCADDON files, and clean build caches.
