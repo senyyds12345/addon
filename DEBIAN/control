@@ -1,5 +1,5 @@
 Package: addon
-Version: 1.1.0
+Version: 1.1.2
 Architecture: all               
 Maintainer: senyyds <1494621359@qq.com>  
 Depends: util-linux, jq, zip, python
